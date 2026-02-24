@@ -1,4 +1,4 @@
-# PDU: Proactive Domain Unification for Robust Echocardiography Segmentation
+# PDU: Proactive Domain Unification for Robust Echocardiography Segmentation (MICCAI ID 3642)
 
 
 ![pipeline](Image/miccaiPUD.jpg)
