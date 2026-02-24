@@ -1,7 +1,7 @@
 # PDU: Proactive Domain Unification for Robust Echocardiography Segmentation
 
 
-![pipeline](image/pipeline.jpg)
+![pipeline](image/miccaiPUD.jpg)
 
 This repository provides an implementation of a **domain-unified pipeline** for ultrasound image segmentation, including:
 
