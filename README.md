@@ -1,148 +1,126 @@
+<div align="center">
 
-# PDU: Proactive Domain Unification for Robust Echocardiography Segmentation
+# 🫀 PDU: Proactive Domain Unification
+### for Robust Echocardiography Segmentation
 
-Official implementation of **Proactive Domain Unification (PDU)** for robust cross-center echocardiography segmentation.
+[![MICCAI](https://img.shields.io/badge/MICCAI_2026-Early_Accept-brightgreen?style=for-the-badge)](https://conferences.miccai.org/2026/)
+[![Paper](https://img.shields.io/badge/Paper-Springer_LNCS-blue?style=for-the-badge)](https://github.com/PXinTao/PDU)
+[![Code](https://img.shields.io/badge/Code-GitHub-black?style=for-the-badge&logo=github)](https://github.com/PXinTao/PDU)
 
-> **MICCAI 2026 Early Accept**   
 
 
-![pipeline](Image/miccaiPUD.jpg)
-
-## Overview
-
-PDU is an inference-time input-domain unification framework for robust echocardiography segmentation under cross-center and cross-vendor appearance shifts.
-
-Instead of requiring target-domain labels or updating the segmenter at test time, PDU maps heterogeneous inputs into a fixed source-aligned appearance space before segmentation. The segmentation model is trained on PDU-unified source images and PDU is applied consistently at inference.
-
-The pipeline contains four main stages:
-
-- **Stage I**: Structure-constrained domain unifier training with ControlNet diffusion
-- **Stage II**: Source/target domain unification using the trained unifier
-- **Stage III**: Reliability representation learning with BYOL hypersphere embeddings
-- **Stage IV**: Reliability-guided frequency fusion with DWT/IDWT
+</div>
 
 ---
 
-## Repository Structure
+![pipeline](Image/miccaiPUD.jpg)
+
+---
+
+## 💡 Motivation
+
+Deep learning segmentation models trained on one center often fail when deployed at another — due to vendor-specific speckle, gain, and contrast differences. Existing domain generalization methods ask the model to **passively tolerate** these shifts. We take a different approach:
+
+> **PDU proactively unifies the input domain before segmentation** — mapping heterogeneous target images into a fixed source-aligned appearance space, with no target labels and no test-time model updating.
+
+---
+
+## ✨ Highlights
+
+- 🔁 **Inference-time preprocessing** — no target labels, no segmenter fine-tuning
+- 🏗️ **Structure-conditioned generation** — HED-guided ControlNet diffusion preserves LV boundaries
+- 🔒 **Reliability-guided frequency fusion** — locks low-frequency anatomy, injects high-frequency style under reliability control
+- 🔌 **Plug-and-play** — model-agnostic, tested on 6 diverse architectures (CNN / Transformer / Mamba / KAN)
+- 📈 **+6.0% Dice, −4.7mm HD95** on EchoNet→CAMUS; recovers **67.2–83.5%** of the cross-domain gap
+
+---
+
+## 🗂️ Repository Structure
 
 ```text
 PDU/
 ├── DomainUnifiedSegmentation/
-│   ├── train_edge.py
-│   ├── export_edges.py
-│   ├── prepare_controlnet_json.py
-│   ├── train_controlnet_unifier.py
-│   ├── infer_unify_only.py
-│   └── infer_unifier_all_splits_v2.py
+│   ├── train_edge.py                     # HED-like LV edge detector
+│   ├── export_edges.py                   # Export boundary cues
+│   ├── prepare_controlnet_json.py        # Prepare ControlNet training data
+│   ├── train_controlnet_unifier.py       # Stage I: domain unifier training
+│   ├── infer_unify_only.py               # Stage II: single-folder unification
+│   └── infer_unifier_all_splits_v2.py    # Stage II: batch unification
 ├── Stage3/
-│   ├── train_byol_hypersphere.py
-│   └── compute_S_and_fuse_calib.py
-├── third_party/
-│   └── controlnet/
+│   ├── train_byol_hypersphere.py         # Stage III: reliability encoder
+│   └── compute_S_and_fuse_calib.py       # Stage IV: reliability-guided fusion
+├── third_party/controlnet/               # ControlNet (see Acknowledgements)
 ├── Image/
-│   └── miccaiPUD.jpg
 ├── checkpoints/
 ├── configs/
 ├── data/
-├── LICENSE
 └── README.md
-````
+```
 
 ---
 
-## Installation
-
-Create a Python environment and install the required packages.
+## 🛠️ Installation
 
 ```bash
-conda create -n pdu python=3.9 -y
-conda activate pdu
-```
+conda create -n pdu python=3.9 -y && conda activate pdu
 
-Install PyTorch according to your CUDA version. For example:
-
-```bash
+# PyTorch (adjust for your CUDA version)
 pip install torch torchvision torchaudio
-```
 
-Install other dependencies:
-
-```bash
+# Core dependencies
 pip install numpy opencv-python pillow tqdm scikit-image scikit-learn matplotlib
 pip install einops pytorch-lightning
-```
 
-For ControlNet-related training and inference, please also install the dependencies required by the ControlNet code under `third_party/controlnet/`.
+# ControlNet dependencies
+cd third_party/controlnet && pip install -r requirements.txt
+```
 
 ---
 
-## Data Preparation
-
-A recommended data layout is:
+## 📁 Data Layout
 
 ```text
 data/
 ├── source/
-│   ├── images/
-│   └── masks/
+│   ├── images/          # Source domain images (EchoNet)
+│   └── masks/           # Source domain labels
 ├── target/
-│   ├── images/
-│   └── masks/          # optional, only for evaluation
-├── edges/
-│   └── source_pred/
+│   └── images/          # Target domain images (CAMUS / PrivateEcho)
+├── edges/source_pred/   # Predicted LV boundary cues
 ├── unified/
-│   ├── source/
-│   └── target/
-└── fused/
-    └── target/
+│   ├── source/          # PDU-unified source images (for segmenter training)
+│   └── target/          # PDU-unified target images
+└── fused/target/        # Final fused inputs for segmentation
 ```
-
-Here, `source` denotes the labeled training domain used to train the segmentation model, and `target` denotes the deployment domain.
 
 ---
 
-## Stage I — Structure-Constrained Domain Unifier Training
+## 🚀 Running PDU
 
-### Optional: Train an LV Edge Detector
+### Stage I — Domain Unifier Training
 
-Train an HED-like edge detector using source-domain images and masks.
+<details>
+<summary>Click to expand</summary>
 
+**Train edge detector:**
 ```bash
 python DomainUnifiedSegmentation/train_edge.py \
   --images_dir data/source/images \
   --masks_dir  data/source/masks \
   --out_ckpt   checkpoints/hed_lv_prob.pth \
-  --epochs 30 \
-  --batch_size 8 \
-  --lr 1e-4 \
-  --resize 256 \
-  --device cuda
+  --epochs 30 --batch_size 8 --lr 1e-4 --resize 256 --device cuda
 ```
 
-Export predicted LV boundary cues as ControlNet hints.
-
+**Export boundary cues:**
 ```bash
 python DomainUnifiedSegmentation/export_edges.py \
   --images_dir data/source/images \
   --out_dir    data/edges/source_pred \
   --ckpt       checkpoints/hed_lv_prob.pth \
-  --resize     512 \
-  --device cuda
+  --resize 512 --device cuda
 ```
 
-### Prepare ControlNet Training JSON
-
-Without edge hints:
-
-```bash
-python DomainUnifiedSegmentation/prepare_controlnet_json.py \
-  --images_dir data/source/images \
-  --out_json   configs/train_controlnet_source.json \
-  --prompt "Ultrasound"
-```
-
-With edge hints:
-
+**Prepare training JSON:**
 ```bash
 python DomainUnifiedSegmentation/prepare_controlnet_json.py \
   --images_dir data/source/images \
@@ -151,10 +129,7 @@ python DomainUnifiedSegmentation/prepare_controlnet_json.py \
   --prompt "Ultrasound"
 ```
 
-### Train the Domain Unifier
-
-This repository reuses ControlNet code. Please make sure `--stage1_root` points to your local ControlNet directory.
-
+**Train unifier:**
 ```bash
 python DomainUnifiedSegmentation/train_controlnet_unifier.py \
   --stage1_root third_party/controlnet \
@@ -162,178 +137,102 @@ python DomainUnifiedSegmentation/train_controlnet_unifier.py \
   --sd_ckpt     /path/to/stable-diffusion-v1-5.ckpt \
   --controlnet_ckpt /path/to/control_sd15_canny.pth \
   --out_dir     checkpoints/controlnet_unifier \
-  --max_epochs  50 \
-  --batch_size 4 \
-  --gpus 1
+  --max_epochs 50 --batch_size 4 --gpus 1
 ```
+</details>
 
-If your ControlNet code is stored under another folder, replace `third_party/controlnet` with the corresponding path.
-
----
-
-## Stage II — Domain Unification
-
-After Stage I, use the trained unifier to generate source-aligned images.
-
-### Unify Target Images
+### Stage II — Domain Unification
 
 ```bash
+# Unify target images
 python DomainUnifiedSegmentation/infer_unify_only.py \
   --stage1_root third_party/controlnet \
   --finetuned_ckpt checkpoints/controlnet_unifier/last.ckpt \
   --input_dir  data/target/images \
   --output_dir data/unified/target \
-  --prompt "Ultrasound" \
-  --device cuda
-```
+  --prompt "Ultrasound" --device cuda
 
-### Unify Source Images
-
-For consistency with the paper setting, the segmentation model should be trained on PDU-unified source images.
-
-```bash
+# Unify source images (for segmenter retraining)
 python DomainUnifiedSegmentation/infer_unify_only.py \
   --stage1_root third_party/controlnet \
   --finetuned_ckpt checkpoints/controlnet_unifier/last.ckpt \
   --input_dir  data/source/images \
   --output_dir data/unified/source \
-  --prompt "Ultrasound" \
-  --device cuda
+  --prompt "Ultrasound" --device cuda
 ```
 
-### Batch Unification
-
-If your data are organized into multiple folders or splits:
-
-```bash
-python DomainUnifiedSegmentation/infer_unifier_all_splits_v2.py \
-  --stage1_root third_party/controlnet \
-  --finetuned_ckpt checkpoints/controlnet_unifier/last.ckpt \
-  --root_dir data \
-  --prompt "Ultrasound" \
-  --device cuda
-```
-
----
-
-## Stage III — Reliability Representation Learning
-
-PDU learns a reliability embedding from **source raw--unified pairs**. This avoids requiring target-domain labels and keeps the reliability model anchored to the source-domain training distribution.
-
-Train the BYOL hypersphere representation model:
+### Stage III — Reliability Representation Learning
 
 ```bash
 python Stage3/train_byol_hypersphere.py \
-  --target_dir data/source/images \
+  --target_dir  data/source/images \
   --unified_dir data/unified/source \
-  --out_ckpt checkpoints/byol_hypersphere.ckpt \
-  --image_size 512 \
-  --batch_size 32 \
-  --max_epochs 200 \
-  --device cuda
+  --out_ckpt    checkpoints/byol_hypersphere.ckpt \
+  --image_size 512 --batch_size 32 --max_epochs 200 --device cuda
 ```
 
-> Note: The argument name `--target_dir` follows the original script interface. In the PDU training protocol, this directory should point to the **raw source images**, while `--unified_dir` should point to the corresponding **PDU-unified source images**.
+> **Note:** `--target_dir` should point to **raw source images** and `--unified_dir` to **PDU-unified source images**. The encoder is trained on source raw–unified pairs.
 
----
-
-## Stage IV — Reliability-Guided Frequency Fusion
-
-At inference time, PDU computes a reliability score and fuses raw and unified target images in the frequency domain. The low-frequency anatomical structure is inherited from the raw image, while high-frequency source-style cues are injected under reliability control.
+### Stage IV — Reliability-Guided Frequency Fusion
 
 ```bash
 python Stage3/compute_S_and_fuse_calib.py \
-  --target_dir data/target/images \
+  --target_dir  data/target/images \
   --unified_dir data/unified/target \
-  --repr_ckpt  checkpoints/byol_hypersphere.ckpt \
-  --out_dir    data/fused/target \
+  --repr_ckpt   checkpoints/byol_hypersphere.ckpt \
+  --out_dir     data/fused/target \
   --device cuda
 ```
 
-The fused images will be saved to:
-
-```text
-data/fused/target/
-```
-
-These fused images can then be used as the final inputs to the frozen segmentation model.
+The fused images in `data/fused/target/` are the final inputs to the segmentation model.
 
 ---
 
-## Segmentation Training and Evaluation
+## 📊 Segmentation Protocol
 
-In the paper setting, segmentation models are trained on the PDU-unified source domain and evaluated on PDU-processed target images.
+| | Train input | Test input |
+|---|---|---|
+| **Baseline** | `data/source/images/` | `data/target/images/` |
+| **PDU** | `data/unified/source/` | `data/fused/target/` |
 
-A typical protocol is:
-
-```text
-Train segmentation model:
-    input  = data/unified/source/
-    label  = data/source/masks/
-
-Inference:
-    input  = data/fused/target/
-    model  = frozen segmentation model
-```
-
-For the raw baseline, train the same segmentation architecture on:
-
-```text
-input = data/source/images/
-label = data/source/masks/
-```
-
-and evaluate directly on:
-
-```text
-input = data/target/images/
-```
-
-This ensures a clear comparison between direct cross-domain deployment and proactive input-domain unification.
+Both use the same segmentation architecture and source labels — the only difference is the input domain.
 
 ---
 
-## Important Notes
+## 📝 Citation
 
-* PDU does **not** require target-domain labels.
-* PDU does **not** update the segmentation model at test time.
-* PDU is a train/test input-domain redesign: the segmenter is trained on PDU-unified source images and PDU is applied consistently at inference.
-* The reliability encoder is trained using source raw--unified pairs.
-* Target images are processed only at inference for unification, reliability estimation, and frequency fusion.
-
----
-
-## Citation
-
-If you find this repository useful, please cite our paper:
+If you find PDU useful in your research, please cite:
 
 ```bibtex
 @inproceedings{pang2026pdu,
   title     = {Proactive Domain Unification for Robust Echocardiography Segmentation},
-  author    = {Pang, Xintao and Yang, Jinlin and Sun, Yue and Gao, Zhifan and Li, Wei and Tan, Tao},
-  booktitle = {International Conference on Medical Image Computing and Computer-Assisted Intervention},
-  year      = {2026}
+  author    = {Pang, Xintao and Yang, Jinlin and Sun, Yue and
+               Gao, Zhifan and Li, Wei and Tan, Tao},
+  booktitle = {Medical Image Computing and Computer-Assisted Intervention},
+  year      = {2026},
+  publisher = {Springer}
 }
 ```
 
 ---
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
-This repository builds upon and reuses components from the following projects:
+This project builds upon the following excellent works, and we sincerely thank their authors for making their code publicly available:
 
-- [ControlNet](https://github.com/lllyasviel/ControlNet)
-- Stable Diffusion
-- [ADAptation](https://github.com/miccai25-966/ADAptation), the official codebase for *ADAptation: Reconstruction-based Unsupervised Active Learning for Breast Ultrasound Diagnosis*, from which we adapted parts of the diffusion-based reconstruction/unification and hypersphere representation pipeline.
+- [ControlNet](https://github.com/lllyasviel/ControlNet) — structure-conditioned diffusion backbone used in Stage I
+- [BYOL-PyTorch](https://github.com/lucidrains/byol-pytorch) — self-supervised hypersphere representation learning used in Stage III
+- [EchoNet-Dynamic](https://echonet.github.io/dynamic/) — source domain dataset
+- [CAMUS](https://www.creatis.insa-lyon.fr/Challenge/camus/) — target domain dataset
 
-We thank the authors of these projects for making their code and resources publicly available. Please follow the original licenses of third-party code included under `third_party/`.
+We especially thank the authors of **ADAptation**:
+
+> *ADAptation: Reconstruction-based Unsupervised Active Learning for Breast Ultrasound Diagnosis*  
+> MICCAI 2025 | [[Paper]](https://link.springer.com/chapter/10.1007/978-3-031-72378-0_35) · [[Code]](https://github.com/miccai25-966/ADAptation)🎉
 
 ---
 
-## License
+## 📄 License
 
-Code in this repository is released under the license specified in `LICENSE`.
-
-Third-party code under `third_party/` is governed by the original licenses of the corresponding projects.
-
-
+This repository is released under the [MIT License](LICENSE).  
+Third-party code under `third_party/` follows the respective original licenses.
