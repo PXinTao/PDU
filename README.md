@@ -322,12 +322,11 @@ If you find this repository useful, please cite our paper:
 
 This repository builds upon and reuses components from the following projects:
 
-* ControlNet
-* Stable Diffusion
-* BYOL-style self-supervised representation learning
-* HED-style edge detection
+- [ControlNet](https://github.com/lllyasviel/ControlNet)
+- Stable Diffusion
+- [ADAptation](https://github.com/miccai25-966/ADAptation), the official codebase for *ADAptation: Reconstruction-based Unsupervised Active Learning for Breast Ultrasound Diagnosis*, from which we adapted parts of the diffusion-based reconstruction/unification and hypersphere representation pipeline.
 
-Please follow the original licenses of third-party code included under `third_party/`.
+We thank the authors of these projects for making their code and resources publicly available. Please follow the original licenses of third-party code included under `third_party/`.
 
 ---
 
@@ -337,12 +336,4 @@ Code in this repository is released under the license specified in `LICENSE`.
 
 Third-party code under `third_party/` is governed by the original licenses of the corresponding projects.
 
-```
 
-这版比你原来的关键修正是：
-
-**Stage III 改成 source raw--unified pairs**，和你论文一致；  
-**补了 segmentation training/evaluation protocol**，避免别人误以为 PDU 是直接贴到 raw-trained model 后面；  
-**修复了 Markdown 代码块错误**，你原来 `Stage IV` 那里代码块没有正常闭合；  
-**把 “no target labels / no test-time update / train-test redesign” 写清楚**，和 CR 版完全一致。
-```
