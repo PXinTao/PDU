@@ -1,15 +1,27 @@
 <div align="center">
 
-# 🫀 PDU: Proactive Domain Unification
-### for Robust Echocardiography Segmentation
+<img src="Image/logo-macaopoly.svg" height="80px"/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="Image/sysu.jpg" height="75px"/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="Image/yfy.png" height="75px"/>
 
-[![MICCAI](https://img.shields.io/badge/MICCAI_2026-Early_Accept-brightgreen?style=for-the-badge)](https://conferences.miccai.org/2026/)
-[![Paper](https://img.shields.io/badge/Paper-Springer_LNCS-blue?style=for-the-badge)](https://github.com/PXinTao/PDU)
-[![Code](https://img.shields.io/badge/Code-GitHub-black?style=for-the-badge&logo=github)](https://github.com/PXinTao/PDU)
+<br/><br/>
+
+
+<h1>🫀 PDU: Proactive Domain Unification</h1>
+<h3>for Robust Echocardiography Segmentation</h3>
+
+<a href="https://conferences.miccai.org/2026/"><img src="https://img.shields.io/badge/MICCAI_2026-Early_Accept-brightgreen?style=for-the-badge"/></a>
+<a href="https://github.com/PXinTao/PDU"><img src="https://img.shields.io/badge/Paper-Springer_LNCS-blue?style=for-the-badge"/></a>
+<a href="https://github.com/PXinTao/PDU"><img src="https://img.shields.io/badge/Code-GitHub-black?style=for-the-badge&logo=github"/></a>
+
+<br/><br/>
+</div>
+
 
 🎉 **Accepted as Early Accept at MICCAI 2026** 🎉
 
-</div>
 
 ---
 
