@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="Image/logo-macaopoly.svg" height="80px"/>
+<img src="Image/logo-macaopoly.svg" height="50px"/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="Image/sysu.jpg" height="75px"/>
+<img src="Image/sysu.jpg" height="45px"/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="Image/yfy.png" height="75px"/>
+<img src="Image/yfy.png" height="45px"/>
 
 <br/><br/>
 
