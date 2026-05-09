@@ -7,7 +7,7 @@
 [![Paper](https://img.shields.io/badge/Paper-Springer_LNCS-blue?style=for-the-badge)](https://github.com/PXinTao/PDU)
 [![Code](https://img.shields.io/badge/Code-GitHub-black?style=for-the-badge&logo=github)](https://github.com/PXinTao/PDU)
 
-
+🎉 **Accepted as Early Accept at MICCAI 2026** (Top ~9% of submissions) 🎉
 
 </div>
 
